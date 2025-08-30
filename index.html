@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Study Material App</title>
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <style>
+    :root {
+      --gold-1: #FFC700;
+      --dark-bg: #05050A;
+      --dark-panel-bg: rgba(22, 22, 38, 0.6);
+      --dark-border: rgba(255, 199, 0, 0.15);
+      --light-bg: #f0f2f5;
+      --light-panel-bg: rgba(255, 255, 255, 0.8);
+      --light-text: #1c1e21;
+      --light-border: rgba(0, 0, 0, 0.1);
+      --accent-orange: #FF5F1F;
+      --border-radius: 20px;
+      --glass-blur: 16px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; font-family: 'Poppins', sans-serif; }
+    
+    body {
+      background-color: var(--dark-bg);
+      color: var(--gold-1);
+      height: 100vh;
+      overflow: hidden;
+      transition: background-color 0.4s ease, color 0.4s ease;
+      position: relative;
+    }
+    body.light { background-color: var(--light-bg); color: var(--light-text); }
+    body.modal-open { overflow: hidden; }
+
+    /* --- Background & Effects --- */
+    .background-layers { position: fixed; inset: 0; z-index: -1; pointer-events: none; overflow: hidden; }
+    .aurora-bg {
+      position: absolute; inset: -50%;
+      background: radial-gradient(circle at 10% 20%, rgba(255,199,0,0.15), transparent 40%),
+                  radial-gradient(circle at 80% 90%, rgba(255,95,31,0.12), transparent 40%);
+      animation: moveAurora 25s ease-in-out infinite;
+      filter: blur(80px);
+    }
+    @keyframes moveAurora {
+      0%, 100% { transform: translate(0, 0) rotate(0deg); }
+      50% { transform: translate(10%, 5%) rotate(10deg); }
+    }
+    .noise-texture {
+      position: absolute; inset: 0;
+      background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><filter id="n"><feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="4" stitchTiles="stitch"/></filter><rect width="100%" height="100%" filter="url(%23n)" opacity="0.03"/></svg>');
+      opacity: 0.5;
+    }
+    body.light .aurora-bg { display: none; }
+
+    .app-wrap { position: relative; z-index: 1; height: 100vh; display: flex; flex-direction: column; }
+    .page {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      opacity: 0; pointer-events: none; transition: opacity 0.5s ease, transform 0.5s ease; transform: translateY(20px);
+    }
+    .page.active { opacity: 1; pointer-events: auto; transform: translateY(0); }
+    
+    .content-area {
+      flex-grow: 1; overflow-y: auto; padding: 25px;
+      display: flex; flex-direction: column; align-items: center; gap: 16px;
+    }
+    
+    /* --- Home Page --- */
+    .home-content { justify-content: center; align-items: center; text-align: center; height: 100%; padding: 20px; }
+    .home-content h1 { font-size: 2.8rem; font-weight: 700; margin-bottom: 40px; text-shadow: 0 4px 20px rgba(0,0,0,0.5); }
+    .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 700px; }
+    .subject-card {
+      background: var(--dark-panel-bg); backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--dark-border); border-radius: var(--border-radius);
+      padding: 30px; text-decoration: none; color: #f0f0f0; font-size: 1.2rem; font-weight: 600;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 15px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+      animation: floatIn 0.6s ease-out backwards; cursor: pointer;
+    }
+    @keyframes floatIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .subject-card:hover { transform: translateY(-10px); box-shadow: 0 15px 40px rgba(0,0,0,0.4); border-color: rgba(255, 199, 0, 0.4); }
+    .subject-card i { font-size: 2.8rem; color: var(--gold-1); }
+    .subject-card.full-width { grid-column: 1 / -1; }
+    body.light .subject-card { background: var(--light-panel-bg); border-color: var(--light-border); color: var(--light-text); box-shadow: 0 8px 30px rgba(0,0,0,0.08); }
+    body.light .subject-card i { color: var(--accent-orange); }
+
+    /* --- Inner Pages (Chapters & About) --- */
+    .navbar {
+      background: rgba(10, 10, 20, 0.5); backdrop-filter: blur(var(--glass-blur));
+      padding: 15px 25px; font-weight: 600; cursor: pointer; z-index: 10;
+      border-bottom: 1px solid var(--dark-border); display: flex; align-items: center; gap: 15px; font-size: 1.2rem;
+    }
+    .page-title { font-size: 2rem; font-weight: 700; margin-bottom: 25px; text-align: center; }
+
+    .chapter-card {
+      background: var(--dark-panel-bg); backdrop-filter: blur(var(--glass-blur));
+      border: 1px solid var(--dark-border); border-radius: 14px; padding: 15px 20px;
+      width: 100%; max-width: 800px; display: flex; justify-content: space-between; align-items: center; gap: 15px;
+      animation: slideUp 0.5s ease-out backwards;
+      transition: background-color 0.3s, border-color 0.3s;
+    }
+    .chapter-card:hover {
+      background-color: rgba(255, 199, 0, 0.05);
+      border-color: rgba(255, 199, 0, 0.3);
+    }
+    .chapter-card:nth-child(n+2) { animation-delay: calc((n - 2) * 0.05s); }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+    .chapter-info { display: flex; align-items: center; gap: 15px; font-size: 1.1rem; font-weight: 500; color: #f0f0f0; }
+    .chapter-actions { display: flex; gap: 10px; }
+    .action-btn {
+      padding: 8px 16px; text-decoration: none; font-weight: 600;
+      border-radius: 10px; transition: all 0.2s ease; border: 1px solid transparent;
+      font-size: 0.9rem; white-space: nowrap; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    }
+    .action-btn:active { transform: scale(0.97); }
+    .btn-view { background-color: var(--gold-1); color: var(--dark-bg); box-shadow: 0 4px 15px rgba(255, 199, 0, 0.2); }
+    .btn-view:hover { background-color: #ffd84d; box-shadow: 0 6px 20px rgba(255, 199, 0, 0.3); }
+    .btn-download { background-color: transparent; color: #ccc; border-color: #555; }
+    .btn-download:hover { background-color: rgba(255, 255, 255, 0.1); color: #fff; border-color: #777; }
+    
+    .coming-soon { opacity: 0.6; border-style: dashed; }
+    .coming-soon .chapter-actions { display: none; }
+    
+    /* --- Follow Us Page Styles --- */
+    .profile-list { display: flex; flex-direction: column; gap: 20px; width: 100%; max-width: 500px; }
+    .profile-card { background: var(--dark-panel-bg); backdrop-filter: blur(var(--glass-blur)); border-radius: var(--border-radius); padding: 25px; display: flex; flex-direction: column; gap: 15px; position: relative; transition: transform 0.3s ease; animation: floatIn 0.5s ease-out backwards; }
+    .profile-card:hover { transform: translateY(-5px); }
+    .profile-header { display: flex; align-items: center; gap: 15px; }
+    .profile-header .icon-circle { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; background: rgba(0,0,0,0.3); }
+    .profile-header .role { color: #ddd; font-weight: 600; font-size: 1.1rem; }
+    .profile-main { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+    .profile-main .username { font-weight: 700; font-size: 1.2rem; color: var(--gold-1); word-break: break-all; }
+    .follow-btn { padding: 10px 28px; background: linear-gradient(45deg, var(--accent-orange), #FF3D00); color: #fff; text-decoration: none; font-weight: 700; border-radius: 12px; transition: transform 0.2s ease, box-shadow 0.3s ease; flex-shrink: 0; position: relative; overflow: hidden; }
+    .follow-btn::after { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: linear-gradient(to right, transparent, rgba(255,255,255,0.3), transparent); transform: rotate(25deg) translateX(-100%); transition: transform 0.6s ease; }
+    .follow-btn:hover::after { transform: rotate(25deg) translateX(100%); }
+    .follow-btn:hover { transform: scale(1.05); box-shadow: 0 6px 20px rgba(255, 95, 31, 0.4); }
+    .profile-card.owner { padding: 2px; background: none; position: relative; }
+    .owner .card-content { background: var(--dark-bg); border-radius: 18px; padding: 23px; }
+    .profile-card.owner::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: var(--border-radius); background: linear-gradient(120deg, var(--gold-1), var(--accent-orange), #FF3D00, var(--gold-1)); background-size: 200% 200%; animation: animateBorder 4s linear infinite; box-shadow: 0 0 30px rgba(255,199,0, 0.4); }
+    @keyframes animateBorder { from { background-position: 0% 50%; } to { background-position: 200% 50%; } }
+    .profile-card.active-owner { border: 2px solid transparent; background: linear-gradient(var(--dark-panel-bg), var(--dark-panel-bg)) padding-box, linear-gradient(120deg, var(--gold-1), #555) border-box; box-shadow: inset 0 0 15px rgba(255,199,0, 0.1); }
+    .profile-card.elder { border: 2px solid #666; }
+
+    /* --- PDF Viewer Modal --- */
+    .modal-overlay { position: fixed; inset: 0; z-index: 2000; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+    .modal-overlay.show { opacity: 1; pointer-events: auto; }
+    .modal-container { background: var(--dark-bg); border: 1px solid var(--dark-border); border-radius: 15px; width: 95%; height: 90%; max-width: 1200px; display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s ease; }
+    .modal-overlay.show .modal-container { transform: scale(1); }
+    .modal-header { padding: 15px 20px; border-bottom: 1px solid var(--dark-border); display: flex; justify-content: space-between; align-items: center; font-weight: 600; color: #fff; flex-shrink: 0; }
+    .modal-title { text-overflow: ellipsis; white-space: nowrap; overflow: hidden; }
+    .modal-close-btn { background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; padding: 0 10px; }
+    .modal-body { flex-grow: 1; position: relative; }
+    .modal-body .loader { position: absolute; inset: 0; display: grid; place-items: center; color: var(--gold-1); font-size: 1.2rem; }
+    .loader::after { content: ''; width: 40px; height: 40px; border: 4px solid rgba(255, 199, 0, 0.2); border-top-color: var(--gold-1); border-radius: 50%; animation: spin 1s linear infinite; position: absolute; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .modal-body iframe { width: 100%; height: 100%; border: none; border-radius: 0 0 14px 14px; opacity: 0; transition: opacity 0.4s ease; background: #fff; }
+    .modal-body iframe.loaded { opacity: 1; }
+    
+    .theme-toggle { position: fixed; top: 20px; right: 20px; width: 45px; height: 45px; border: 1px solid var(--dark-border); border-radius: 50%; background: var(--dark-panel-bg); backdrop-filter: blur(var(--glass-blur)); color: var(--gold-1); cursor: pointer; z-index: 100; display: grid; place-items: center; font-size: 1.3rem; transition: all 0.3s ease; }
+
+    @media (max-width: 600px) {
+      .home-content h1 { font-size: 2.2rem; }
+      .subject-grid { grid-template-columns: 1fr; }
+      .chapter-info { flex-direction: column; align-items: flex-start; gap: 5px; font-size: 1rem; }
+      .chapter-card { flex-direction: column; align-items: stretch; }
+      .chapter-actions { justify-content: flex-end; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="background-layers">
+    <div class="aurora-bg"></div>
+    <div class="noise-texture"></div>
+  </div>
+
+  <div class="app-wrap">
+    <button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle Theme"><i class="fas fa-moon"></i></button>
+
+    <div class="page active" id="home">
+      <div class="home-content">
+        <h1>📚 Asr Study Material</h1>
+        <div class="subject-grid">
+          <div class="subject-card" onclick="openPage('math')"> <i class="fas fa-calculator"></i> <span>Math (गणित)</span> </div>
+          <div class="subject-card" onclick="openPage('history')"> <i class="fas fa-landmark"></i> <span>History (इतिहास)</span> </div>
+          <div class="subject-card full-width" onclick="openPage('about')"> <i class="fas fa-info-circle"></i> <span>About App</span> </div>
+          <div class="subject-card full-width" onclick="openPage('follow')"> <i class="fas fa-users"></i> <span>Follow Us</span> </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="page" id="math">
+      <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
+      <div class="content-area">
+        <h2 class="page-title">📘 Math Chapters</h2>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 1: वास्तविक संख्याएँ</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="YOUR-PDF-LINK"><i class="fas fa-eye"></i> View</button><a href="YOUR-PDF-LINK" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 2: बहुपद</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="put your link"><i class="fas fa-eye"></i> View</button><a href="YOUR-PDF-LINK" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 3: दो चर वाले रैखिक समीकरण युग्म</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math_chapter_1-compressed.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math_chapter_1-compressed.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 4: द्विघात समीकरण</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%204%20.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%204%20.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 5: समांतर श्रेढ़िया</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%205.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%205.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 6: त्रिभुज</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%206.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%206.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 7: निर्देशांक ज्यामिति</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%207.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%207.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 8: त्रिकोणमिति का परिचय</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%208.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/math%20chapter%208.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 9: त्रिकोणमिति के कुछ अनुप्रयोग</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="YOUR-PDF-LINK"><i class="fas fa-eye"></i> View</button><a href="YOUR-PDF-LINK" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 10: वृत्त</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="YOUR-PDF-LINK"><i class="fas fa-eye"></i> View</button><a href="YOUR-PDF-LINK" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="history">
+      <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
+      <div class="content-area">
+        <h2 class="page-title">📖 History Chapters</h2>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-alt"></i><span class="chapter-title">Chapter 1: यूरोप में राष्ट्रवाद का उदय</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%201%20_compressed.pdf
+
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%201%20_compressed.pdf
+
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-alt"></i><span class="chapter-title">Chapter 2: भारत में राष्ट्रवाद</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%202_compressed.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%202_compressed.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-alt"></i><span class="chapter-title">Chapter 3: भूमंडलीकृत विश्व का निर्माण</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%203.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%203.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-alt"></i><span class="chapter-title">Chapter 4: औद्योगीकरण का युग</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%204%20.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%204%20.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-alt"></i><span class="chapter-title">Chapter 5: मुद्रण संस्कृति और आधुनिक दुनिया</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%205.pdf
+"><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%205.pdf
+" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
+        <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapter 6: Coming Soon</span></div></div>
+        <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapter 7: Coming Soon</span></div></div>
+        <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapter 8: Coming Soon</span></div></div>
+        <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapter 9: Coming Soon</span></div></div>
+        <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapter 10: Coming Soon</span></div></div>
+      </div>
+    </div>
+
+    <div class="page" id="about">
+      <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
+      <div class="content-area">
+        <h2 class="page-title">ℹ️ About This App</h2>
+        <p style="text-align:center; max-width: 600px; line-height: 1.8;">यह App सिर्फ study material (PDF links) provide करने के लिए बनाया गया है।</p>
+        <p style="text-align:center; max-width: 600px; line-height: 1.8;"><b>Note:</b> अगर किसी को नई PDF या features add करवानी हों तो हमसे contact करें।</p>
+        <p>📞 Phone: +91 8543955526</p>
+        <p>📧 Email: studymaterialasr@gmail.com</p>
+      </div>
+    </div>
+
+    <div class="page" id="follow">
+      <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
+      <div class="content-area">
+        <h2 class="page-title">📲 Follow Us on Instagram®️</h2>
+        <div class="profile-list">
+          <div class="profile-card owner"><div class="card-content"><div class="profile-header"><div class="icon-circle"><i class="fas fa-crown"></i></div> <span class="role">Owner</span></div><div class="profile-main"><div class="username">@it.z_prince_507</div> <a href="https://www.instagram.com/it.z_prince_507" target="_blank" class="follow-btn">Follow</a></div></div></div>
+          <div class="profile-card active-owner"><div class="profile-header"><div class="icon-circle"><i class="fas fa-bolt"></i></div> <span class="role">Active Owner</span></div><div class="profile-main"><div class="username">@_thebest_prince_</div> <a href="https://www.instagram.com/_thebest_prince_" target="_blank" class="follow-btn">Follow</a></div></div>
+          <div class="profile-card active-owner"><div class="profile-header"><div class="icon-circle"><i class="fas fa-bolt"></i></div> <span class="role">Active Owner</span></div><div class="profile-main"><div class="username">@maurya__prince__0.1</div> <a href="https://www.instagram.com/maurya__prince__0.1" target="_blank" class="follow-btn">Follow</a></div></div>
+          <div class="profile-card active-owner"><div class="profile-header"><div class="icon-circle"><i class="fas fa-bolt"></i></div> <span class="role">Active Owner</span></div><div class="profile-main"><div class="username">@itz_aryan__507</div> <a href="https://www.instagram.com/itz_aryan__507" target="_blank" class="follow-btn">Follow</a></div></div>
+          <div class="profile-card active-owner"><div class="profile-header"><div class="icon-circle"><i class="fas fa-bolt"></i></div> <span class="role">Active Owner</span></div><div class="profile-main"><div class="username">@princemaurya2950</div> <a href="https://www.instagram.com/princemaurya2950" target="_blank" class="follow-btn">Follow</a></div></div>
+          <div class="profile-card elder"><div class="profile-header"><div class="icon-circle"><i class="fas fa-handshake"></i></div> <span class="role">Elder</span></div><div class="profile-main"><div class="username">@mr_akash_pal_5874</div> <a href="https://www.instagram.com/mr_akash_pal_5874" target="_blank" class="follow-btn">Follow</a></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="pdf-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <span class="modal-title">Loading Chapter...</span>
+        <button class="modal-close-btn" aria-label="Close PDF Viewer">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="loader"></div>
+        <iframe src="about:blank" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- Page Navigation ---
+    function openPage(pageId) {
+      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+      const el = document.getElementById(pageId);
+      if(el) el.classList.add("active");
+    }
+    function goHome() { openPage('home'); }
+
+    // --- Theme Toggle ---
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+      const btn = document.querySelector(".theme-toggle i");
+      btn.className = document.body.classList.contains("light") ? "fas fa-sun" : "fas fa-moon";
+    }
+
+    // --- PDF Modal Logic ---
+    const pdfModal = document.getElementById('pdf-modal');
+    const modalTitle = pdfModal.querySelector('.modal-title');
+    const modalIframe = pdfModal.querySelector('iframe');
+    const modalLoader = pdfModal.querySelector('.loader');
+
+    function openPdfModal(pdfUrl, chapterTitle) {
+      const viewerUrl = `https://docs.google.com/gview?url=${encodeURIComponent(pdfUrl)}&embedded=true`;
+      
+      modalTitle.textContent = chapterTitle;
+      modalLoader.style.display = 'grid';
+      modalIframe.classList.remove('loaded');
+      modalIframe.src = viewerUrl;
+
+      pdfModal.classList.add('show');
+      document.body.classList.add('modal-open');
+
+      modalIframe.onload = () => {
+        modalLoader.style.display = 'none';
+        modalIframe.classList.add('loaded');
+      };
+    }
+
+    function closePdfModal() {
+      pdfModal.classList.remove('show');
+      document.body.classList.remove('modal-open');
+      modalIframe.src = 'about:blank';
+    }
+
+    document.body.addEventListener('click', function(event) {
+      const viewButton = event.target.closest('.btn-view');
+      if (viewButton) {
+        const pdfUrl = viewButton.dataset.pdfUrl;
+        const card = viewButton.closest('.chapter-card');
+        const chapterTitle = card.querySelector('.chapter-title').textContent;
+        
+        if (pdfUrl && pdfUrl !== 'YOUR-PDF-LINK') {
+            openPdfModal(pdfUrl, chapterTitle);
+        } else {
+            alert('PDF for this chapter is not available yet.');
+        }
+      }
+      
+      if (event.target.matches('.modal-close-btn') || event.target.matches('.modal-overlay')) {
+        closePdfModal();
+      }
+    });
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && pdfModal.classList.contains('show')) {
+            closePdfModal();
+        }
+    });
+  </script>
+</body>
+</html>
