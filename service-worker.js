@@ -1,4 +1,4 @@
-const CACHE_NAME = "asr-cache-v2"; // <-- version बदला (v1 से v2)
+const CACHE_NAME = "asr-cache-v3"; // <-- version बदला (v1 से v3)
 
 const urlsToCache = [
   "./",
