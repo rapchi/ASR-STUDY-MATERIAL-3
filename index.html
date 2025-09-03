@@ -178,6 +178,52 @@ if ('serviceWorker' in navigator) {
       .chapter-card { flex-direction: column; align-items: stretch; }
       .chapter-actions { justify-content: flex-end; }
     }
+        /* START: AI CHATBOT CSS CODE */
+    #chatbot-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background-color: var(--dark-bg);
+        display: flex;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.3s ease-in-out;
+    }
+    #chatbot-modal.show {
+        opacity: 1;
+        pointer-events: auto;
+    }
+    #chatbot-modal .modal-container {
+        width: 100vw;
+        height: 100vh;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        transform: translateY(20px);
+        transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        opacity: 0;
+    }
+    #chatbot-modal.show .modal-container {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    #chatbot-modal .modal-header {
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--dark-border);
+      background: rgba(10, 10, 20, 0.8);
+      backdrop-filter: blur(10px);
+    }
+    #chatbot-modal .modal-close-btn {
+        background: none; border: none; color: #fff; font-size: 1.8rem; cursor: pointer; padding: 0 10px;
+    }
+    #chatbot-modal .loader {
+        position: absolute; inset: 0; display: grid; place-items: center; color: var(--gold-1); font-size: 1.2rem;
+    }
+    #chatbot-modal .loader::after { content: ''; width: 40px; height: 40px; border: 4px solid rgba(255, 199, 0, 0.2); border-top-color: var(--gold-1); border-radius: 50%; animation: spin 1s linear infinite; position: absolute; }
+    /* END: AI CHATBOT CSS CODE */
   </style>
 </head>
 <body>
@@ -193,6 +239,13 @@ if ('serviceWorker' in navigator) {
     <div class="page active" id="home">
       <div class="home-content">
         <h1>📚 Asr Study Material</h1>
+                <!-- START: AI CHATBOT BUTTON -->
+        <div class="subject-card full-width" style="animation-delay: 0s; flex-direction: row; justify-content: center;" onclick="openChatbotModal()">
+            <i class="fas fa-robot"></i>
+            <span>Ask AI anything</span>
+        </div>
+        <!-- END: AI CHATBOT BUTTON -->
+        
         <div class="subject-grid">
           <div class="subject-card" onclick="openPage('math')"> <i class="fas fa-calculator"></i> <span>Math (गणित)</span> </div>
           <div class="subject-card" onclick="openPage('history')"> <i class="fas fa-landmark"></i> <span>History (इतिहास)</span> </div>
@@ -299,7 +352,20 @@ if ('serviceWorker' in navigator) {
       </div>
     </div>
   </div>
-
+  <!-- START: AI CHATBOT HTML CODE -->
+  <div id="chatbot-modal" class="modal-overlay">
+    <div class="modal-container">
+      <div class="modal-header">
+        <span class="modal-title"><i class="fas fa-brain"></i> AI Assistant</span>
+        <button class="modal-close-btn" aria-label="Close Chatbot Viewer">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="loader"></div>
+        <iframe src="about:blank" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+  <!-- END: AI CHATBOT HTML CODE -->
   <script>
     // --- Page Navigation ---
     function openPage(pageId) {
@@ -369,6 +435,47 @@ if ('serviceWorker' in navigator) {
             closePdfModal();
         }
     });
+        
+        // --- START: AI CHATBOT LOGIC ---
+    const chatbotModal = document.getElementById('chatbot-modal');
+    const chatbotIframe = chatbotModal.querySelector('iframe');
+    const chatbotLoader = chatbotModal.querySelector('.loader');
+
+    function openChatbotModal() {
+        const aiUrl = "https://www.phind.com/";
+        
+        chatbotLoader.style.display = 'grid';
+        chatbotIframe.classList.remove('loaded');
+        chatbotIframe.src = aiUrl;
+
+        chatbotModal.classList.add('show');
+        document.body.classList.add('modal-open');
+
+        chatbotIframe.onload = () => {
+            chatbotLoader.style.display = 'none';
+            chatbotIframe.classList.add('loaded');
+        };
+    }
+
+    function closeChatbotModal() {
+        chatbotModal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        chatbotIframe.src = 'about:blank';
+    }
+    
+    // Event listener for closing the chatbot modal
+    chatbotModal.addEventListener('click', function(event) {
+        if (event.target.matches('.modal-close-btn') || event.target.matches('.modal-overlay')) {
+            closeChatbotModal();
+        }
+    });
+    
+    document.addEventListener('keydown', function(event) {
+        if (event.key === 'Escape' && chatbotModal.classList.contains('show')) {
+            closeChatbotModal();
+        }
+    });
+    // --- END: AI CHATBOT LOGIC ---
   </script>
 </body>
 </html>
