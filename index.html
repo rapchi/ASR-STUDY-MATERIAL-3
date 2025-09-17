@@ -251,7 +251,8 @@ if ('serviceWorker' in navigator) {
         
         <div class="subject-grid">
           <div class="subject-card" onclick="openPage('math')"> <i class="fas fa-calculator"></i> <span>Math (गणित)</span> </div>
-          <div class="subject-card" onclick="openPage('history')"> <i class="fas fa-landmark"></i> <span>History (इतिहास)</span> </div>
+          <!-- Changed onclick to 'social-science' page -->
+<div class="subject-card" onclick="openPage('social-science')"> <i class="fas fa-landmark"></i> <span>Social Science (सामाजिक विज्ञान)</span> </div>
           <div class="subject-card full-width" onclick="openPage('about')"> <i class="fas fa-info-circle"></i> <span>About App</span> </div>
           <div class="subject-card full-width" onclick="openPage('follow')"> <i class="fas fa-users"></i> <span>Follow Us</span> </div>
         </div>
@@ -288,11 +289,24 @@ if ('serviceWorker' in navigator) {
         <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-pdf"></i><span class="chapter-title">Chapter 10: वृत्त</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="YOUR-PDF-LINK"><i class="fas fa-eye"></i> View</button><a href="YOUR-PDF-LINK" download class="action-btn btn-download"><i class="fas fa-download"></i> Download</a></div></div>
       </div>
     </div>
+    <!-- ========= NEW: SOCIAL SCIENCE SUBJECTS PAGE ========= -->
+<div class="page" id="social-science">
+  <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
+  <div class="content-area">
+    <h2 class="page-title">📖 सामाजिक विज्ञान</h2>
+    <div class="subject-grid">
+        <div class="subject-card" onclick="openPage('history-chapters')"> <i class="fas fa-landmark"></i> <span>इतिहास (History)</span> </div>
+        <div class="subject-card" onclick="openPage('geography-chapters')"> <i class="fas fa-globe-asia"></i> <span>भूगोल (Geography)</span> </div>
+        <div class="subject-card" onclick="openPage('pol-science-chapters')"> <i class="fas fa-gavel"></i> <span>राजनीति विज्ञान</span> </div>
+        <div class="subject-card" onclick="openPage('economics-chapters')"> <i class="fas fa-rupee-sign"></i> <span>अर्थशास्त्र</span> </div>
+    </div>
+  </div>
+</div>
 
-    <div class="page" id="history">
-      <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
-      <div class="content-area">
-        <h2 class="page-title">📖 History Chapters</h2>
+    <div class="page" id="history-chapters">
+  <div class="navbar" onclick="openPage('social-science')"><i class="fas fa-arrow-left"></i> Back</div>
+  <div class="content-area">
+    <h2 class="page-title">📖 इतिहास Chapters</h2>
         <div class="chapter-card"><div class="chapter-info"><i class="fas fa-file-alt"></i><span class="chapter-title">Chapter 1: यूरोप में राष्ट्रवाद का उदय</span></div><div class="chapter-actions"><button class="action-btn btn-view" data-pdf-url="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%201%20_compressed.pdf
 
 "><i class="fas fa-eye"></i> View</button><a href="https://raw.githubusercontent.com/rapchi/ASR-STUDY-MATERIAL-3/main/History%20Chapter%201%20_compressed.pdf
@@ -317,6 +331,39 @@ if ('serviceWorker' in navigator) {
         <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapter 10: Coming Soon</span></div></div>
       </div>
     </div>
+    <!-- ========= NEW: GEOGRAPHY CHAPTERS PAGE (TEMPLATE) ========= -->
+<div class="page" id="geography-chapters">
+  <div class="navbar" onclick="openPage('social-science')"><i class="fas fa-arrow-left"></i> Back</div>
+  <div class="content-area">
+    <h2 class="page-title">🗺️ भूगोल Chapters</h2>
+    
+    <!-- यहाँ भूगोल के 1 से 7 चैप्टर के कार्ड पेस्ट करें। -->
+    <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapters Coming Soon...</span></div></div>
+
+  </div>
+</div>
+
+<!-- ========= NEW: POLITICAL SCIENCE CHAPTERS PAGE (TEMPLATE) ========= -->
+<div class="page" id="pol-science-chapters">
+  <div class="navbar" onclick="openPage('social-science')"><i class="fas fa-arrow-left"></i> Back</div>
+  <div class="content-area">
+    <h2 class="page-title">🏛️ राजनीति विज्ञान Chapters</h2>
+    
+    <!-- यहाँ राजनीति विज्ञान के 1 से 8 चैप्टर के कार्ड पेस्ट करें। -->
+    <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapters Coming Soon...</span></div></div>
+  </div>
+</div>
+
+<!-- ========= NEW: ECONOMICS CHAPTERS PAGE (TEMPLATE) ========= -->
+<div class="page" id="economics-chapters">
+  <div class="navbar" onclick="openPage('social-science')"><i class="fas fa-arrow-left"></i> Back</div>
+  <div class="content-area">
+    <h2 class="page-title">💰 अर्थशास्त्र Chapters</h2>
+
+    <!-- यहाँ अर्थशास्त्र के 1 से 5 चैप्टर के कार्ड पेस्ट करें। -->
+    <div class="chapter-card coming-soon"><div class="chapter-info"><i class="fas fa-hourglass-half"></i><span class="chapter-title">Chapters Coming Soon...</span></div></div>
+  </div>
+</div>
 
     <div class="page" id="about">
       <div class="navbar" onclick="goHome()"><i class="fas fa-arrow-left"></i> Back</div>
